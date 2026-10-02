@@ -1,0 +1,58 @@
+{
+  "name": "create-reactor-app",
+  "version": "2.2.1",
+  "type": "module",
+  "description": "Scaffold a real-time AI video app with the Reactor SDK in seconds. Starter templates for Helios and other world models — run `npx create-reactor-app`.",
+  "keywords": [
+    "reactor",
+    "create-reactor-app",
+    "scaffold",
+    "starter",
+    "template",
+    "boilerplate",
+    "cli",
+    "npx",
+    "create-app",
+    "sdk",
+    "react",
+    "real-time",
+    "video",
+    "ai",
+    "world-models"
+  ],
+  "bin": {
+    "create-reactor-app": "dist/bin/create-reactor-app.js"
+  },
+  "author": "Reactor Technologies, Inc.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/reactor-team/create-reactor-app.git"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "packageManager": "pnpm@10.12.1",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "inquirer": "^14.0.2",
+    "simple-git": "^3.36.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "prettier": "^3.8.4",
+    "tsup": "^8.0.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "install-cli": "tsup && pnpm link --global && echo '\n✅ create-reactor-app linked globally. Run it with:\n\n  create-reactor-app\n'"
+  }
+}
