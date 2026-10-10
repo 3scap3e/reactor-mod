@@ -14,8 +14,10 @@ import {
   type FileRef,
 } from "@reactor-team/js-sdk";
 import {
+  CANVAS_ASPECT,
   CONNECT_ATTEMPTS,
   SAFETY_TIMEOUT_MS,
+  SAVE_TIMEOUT_MS,
   type ClipPhase,
   type SingleClipInput,
 } from "../types/clip";
@@ -34,6 +36,7 @@ export function useSingleClip() {
     uploadFile,
     enqueue,
     setAutoplay,
+    setCanvas,
     requestClip,
   } = useFastH3();
 
@@ -81,14 +84,33 @@ export function useSingleClip() {
           setError(failure);
         } else {
           setPhase("saving");
+          let saveTimer: ReturnType<typeof setTimeout> | null = null;
           try {
-            setResult(await requestClip(Math.ceil(secondsRef.current)));
+            const clip = await Promise.race([
+              requestClip(Math.ceil(secondsRef.current)),
+              new Promise<never>((_, reject) => {
+                saveTimer = setTimeout(
+                  () => reject(new Error("saving took too long")),
+                  SAVE_TIMEOUT_MS,
+                );
+              }),
+            ]);
+            setResult(clip);
           } catch (e) {
             setError(`The clip played but could not be saved: ${describe(e)}`);
+          } finally {
+            if (saveTimer) clearTimeout(saveTimer);
           }
         }
       } finally {
-        await closeSession();
+        try {
+          await closeSession();
+        } catch (e) {
+          console.log("reactor disconnect failed", e);
+          setError(
+            "Disconnect failed. Close this tab to make sure the session ends.",
+          );
+        }
         activeRef.current = false;
         finishingRef.current = false;
         setPhase(failure ? "idle" : "done");
@@ -172,6 +194,15 @@ export function useSingleClip() {
         await setAutoplay({ enabled: true });
         if (!activeRef.current) return;
 
+        const canvas = await setCanvas({ aspect: CANVAS_ASPECT });
+        if (!activeRef.current) return;
+        if (!canvas) {
+          await finish(
+            `The model refused the ${CANVAS_ASPECT} canvas. The reason is shown above.`,
+          );
+          return;
+        }
+
         let frame: FileRef | null = null;
         if (startingFrame) {
           setPhase("uploading");
@@ -183,7 +214,7 @@ export function useSingleClip() {
         const reply = await enqueue({
           prompt: prompt.trim(),
           seconds,
-          ...(frame ? { starting_frame: frame } : {}),
+          ...(frame ? { starting_frame: frame, ending_frame: frame } : {}),
         });
         if (!reply) {
           await finish("The model refused the clip. The reason is shown above.");
@@ -202,7 +233,16 @@ export function useSingleClip() {
         await finish(describe(e));
       }
     },
-    [connect, disconnect, enqueue, finish, setAutoplay, status, uploadFile],
+    [
+      connect,
+      disconnect,
+      enqueue,
+      finish,
+      setAutoplay,
+      setCanvas,
+      status,
+      uploadFile,
+    ],
   );
 
   const cancel = useCallback(async () => {

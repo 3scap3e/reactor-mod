@@ -10,7 +10,7 @@ export function Video() {
     <div className="overflow-hidden rounded-xl border border-zinc-800 bg-black">
       <FastH3MainVideoView
         audioTrack="main_audio"
-        className="aspect-video w-full"
+        className="aspect-[4/3] w-full"
       />
     </div>
   );

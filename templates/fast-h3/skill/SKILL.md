@@ -35,7 +35,11 @@ queue panel, now-playing panel and `SnapClip`. The logic lives in
   slider bounded by 5.167–14.375 s (the model snaps to the nearest length it
   can produce).
 - **Generate** is the only connect path: `connect → setAutoplay(true) →
-  uploadFile → enqueue({ prompt, seconds, starting_frame })`.
+  setCanvas({ aspect: "4:3" }) → uploadFile → enqueue({ prompt, seconds,
+  starting_frame, ending_frame })`, with the same uploaded image as both, so
+  the clip opens and closes on it. The canvas is fixed at 4:3 (1024×768) by
+  `CANVAS_ASPECT` in `types/clip.ts`; `setCanvas` is only accepted while the
+  queue is empty and nothing plays, which a fresh session always is.
 - The hook follows the enqueued `clip_id`. On its `clip_finished` (or
   `clip_stopped`) it calls `requestClip(ceil(seconds))` to capture the clip,
   then **disconnects**. On `clip_failed`, a refused `enqueue`, Cancel, or a

@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { ClipDownloadButton, ClipPlayer } from "@reactor-team/js-sdk";
 import { useSingleClip } from "../hooks/useSingleClip";
 import {
+  CANVAS_ASPECT,
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
   CLIP_SECONDS_DEFAULT,
   CLIP_SECONDS_MAX,
   CLIP_SECONDS_MIN,
@@ -95,11 +98,11 @@ export function SingleClip() {
 
       <div className="relative flex flex-col gap-1">
         <label className="text-[11px] text-zinc-500">
-          Starting frame (optional)
+          First and last frame (optional)
         </label>
         {preview ? (
           <div className="relative flex flex-col gap-1.5">
-            <div className="relative flex aspect-video w-full flex-row overflow-hidden rounded-md border border-zinc-800 bg-zinc-950">
+            <div className="relative flex aspect-[4/3] w-full flex-row overflow-hidden rounded-md border border-zinc-800 bg-zinc-950">
               <img
                 src={preview}
                 alt="Starting frame"
@@ -120,7 +123,7 @@ export function SingleClip() {
               busy ? "pointer-events-none opacity-40" : ""
             }`}
           >
-            Upload an image · the clip opens on it
+            Upload an image · the clip opens and ends on it
             <input
               type="file"
               accept="image/*"
@@ -135,7 +138,8 @@ export function SingleClip() {
           </label>
         )}
         <p className="text-[11px] leading-4 text-zinc-600">
-          The image is fitted to the 16:9 canvas (1344×768).
+          Output is always {CANVAS_ASPECT} ({CANVAS_WIDTH}×{CANVAS_HEIGHT}). Your
+          image is fitted to it, so a 4:3 image comes through unchanged.
         </p>
       </div>
 
