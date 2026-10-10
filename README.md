@@ -1,143 +1,108 @@
-# Create Reactor App
+# FastH3 Studio
 
-🧩 **Create Reactor App** is a CLI tool that helps you quickly bootstrap a new application using the Reactor SDK. Get started with interactive AI applications in seconds!
+A custom single-video interface built with Next.js, React, and TypeScript.
+Enter a prompt, choose a duration and optional image targets, and generate a
+video. Every completed capture is saved automatically as an MP4.
 
-## Quick Start
+## Setup
+
+You need Node.js 20 or newer, pnpm, and a Reactor API key with access to FastH3.
+The app calls the hosted model; no local GPU is required.
+
+From the repository root:
 
 ```bash
-npx create-reactor-app my-app --model=helios
+pnpm install
+cp .env.example .env.local
 ```
 
-Or with pnpm:
+Edit `.env.local` and set your key:
 
-```bash
-pnpm dlx create-reactor-app my-app --model=helios
+```dotenv
+REACTOR_API_KEY=rk_your_key_here
 ```
 
-## Usage
+Get a key from [Reactor API keys](https://www.reactor.inc/account/api-keys).
+Keep `.env.local` private. The server exchanges this key for scoped session
+tokens; the browser never receives the API key. No OpenAI key is needed.
+
+## Run locally
+
+Run these commands from the repository root:
 
 ```bash
-npx create-reactor-app [project-name] --model=<name> [options]
-```
-
-The model argument is required. If you omit the project name, you will be prompted for it interactively.
-
-**Arguments:**
-
-| Argument       | Description                                         |
-| -------------- | --------------------------------------------------- |
-| `project-name` | Name of the project to create (prompted if omitted) |
-
-**Options:**
-
-| Option          | Description                                           |
-| --------------- | ----------------------------------------------------- |
-| `--model`, `-m` | Model to scaffold a project for (required)            |
-| `--token`, `-t` | GitHub token for private repository access (optional) |
-| `--help`, `-h`  | Show help message                                     |
-
-**Examples:**
-
-```bash
-# Project name first, model flag after
-npx create-reactor-app my-app --model=helios
-
-# Flag first, project name after
-npx create-reactor-app --model=lingbot my-app
-
-# Project name omitted — you will be prompted for it
-npx create-reactor-app --model=helios
-
-# With a GitHub token (only needed if the template repo is private)
-npx create-reactor-app my-app --model=helios --token ghp_xxxxxxxxxxxx
-```
-
-### Available Models
-
-Templates live in [`templates/`](./templates) in this repository — one runnable Next.js app per model Reactor serves on the API. By default the model name maps 1:1 to a folder of the same name (e.g. `--model=helios` clones the `templates/helios/` folder), so **a folder name there is a public identifier** and renaming one breaks the CLI.
-
-The CLI also supports an optional alias map (`MODEL_MAP` in `bin/create-reactor-app.ts`) for cases where the public model name needs to differ from the folder name. It is empty by default — add an entry only when you want a name → folder rename.
-
-Run the CLI without `--model` to see the list of available models in the templates repo. The output lists explicit aliases first (with the resolved folder shown after `→`) and then any remaining unmapped folders.
-
-### Private Repository Access
-
-While this repository is private, `npx create-reactor-app` cannot read the template list or clone anonymously, so it prompts for a GitHub token. Pass `--token` (or `-t`) to skip the prompt. Once the repository is public the token is no longer needed and both paths work unauthenticated.
-
-## Getting Started After Creation
-
-After creating your project:
-
-```bash
-cd your-project-name
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to see your application running. Make sure to setup your API keys first!
+Open http://localhost:3000. If that port is already occupied, use the URL
+printed in your terminal. Restart the server after changing `.env.local`.
+If the key is missing, the app displays a setup screen.
 
-## Templates
-
-Every template lives in [`templates/`](./templates), which has its own README covering what each one demonstrates, the auth model they all share, and the one behaviour of `@reactor-team/js-sdk` 3.x that is easy to get wrong. Each folder also carries a `skill/SKILL.md` written for someone extending it.
-
-The CLI resolves templates from this repository's **default branch**, not from the installed package, so a template fix reaches users as soon as it merges — no release required. A change to the CLI itself still needs a release.
-
-## Documentation
-
-For comprehensive guides, API references, and tutorials, visit the official Reactor documentation:
-
-📚 **[Reactor Documentation](https://docs.reactor.inc)**
-
-## Requirements
-
-- Node.js 16 or later
-- pnpm (recommended) or npm
-
-## Local Development
-
-To test or develop the CLI locally:
+For a production build on your local machine:
 
 ```bash
-# Install dependencies
-pnpm install
-
-# Build the CLI
 pnpm build
-
-# Link it globally
-pnpm link --global
+pnpm start
 ```
 
-Now you can use `create-reactor-app` anywhere on your system:
+## Generate a video
+
+1. Enter a prompt describing the subject, action, camera, style, and sound.
+2. Optionally upload an image and choose **Use image as**:
+   - **First frame only** (default): start on your image, with a free ending.
+   - **Last frame only**: start from the prompt and end on your image.
+   - **First and last frame**: use the same image for both endpoints.
+3. Choose the duration and click **Generate clip**.
+4. Wait for generation, playback, and saving. The interface confirms the saved path.
+
+Output is fixed to 4:3 (1024×768). Images are fitted to that canvas. The model
+may snap the requested duration to an available clip length. FastH3 uses
+frame targets rather than a whole-scene reference image.
+
+Generation opens a billed Reactor session. The app captures the finished
+playback, disconnects, then assembles and saves the MP4. Cancel ends the run.
+Failed or cancelled attempts without a capture cannot produce a video file.
+
+## Where videos are saved
+
+When running from this folder, files are saved in:
+
+```text
+generated-videos/fast-h3-<timestamp>-<unique-id>.mp4
+```
+
+The folder is created automatically and excluded from Git. Each capture gets
+its own filename, so previous videos are retained. The folder lives on the
+computer running the Next.js server, rather than in the browser Downloads
+folder. The **Download** button also lets you save a browser copy.
+
+If automatic saving fails, the interface displays an error and keeps the
+preview and Download button. Download promptly: the preview link expires.
+On hosted deployments, automatic saving requires a writable, persistent
+server filesystem; ephemeral hosting does not provide a durable archive.
+
+## Code layout
+
+- `modules/SingleClip.tsx`: prompt, image role, duration, preview, and download UI.
+- `hooks/useSingleClip.ts`: connect, upload, generate, capture, disconnect, and save.
+- `types/clip.ts`: input types, canvas settings, and timing constants.
+- `app/FastH3App.tsx`: model provider and memoized token resolver.
+- `app/api/reactor/token/route.ts`: server-side scoped session tokens.
+- `app/api/clips/save/route.ts`: writes completed MP4 files to disk.
+- `app/components/`: header, connection status, command errors, and live video.
+- `skill/SKILL.md`: maintenance instructions for this interface.
+
+The episode composer, AI scene writer, episode presets, queue controls, and
+manual recording modal have been removed. The Reactor SDK and token route
+remain necessary to run FastH3; its UI package supplies the current design tokens.
+
+## Checks
 
 ```bash
-create-reactor-app my-app
+pnpm build
+pnpm exec tsc --noEmit
 ```
 
-To unlink when you're done:
-
-```bash
-pnpm unlink --global
-```
-
-## Releasing
-
-Publishing to npm is automatic: bump `version` in `package.json`, merge to
-`main`, then [create a GitHub Release](https://github.com/reactor-team/create-reactor-app/releases/new)
-tagging that version. The [`publish` workflow](.github/workflows/publish.yml)
-builds and runs `npm publish` for you via npm's trusted publishing (OIDC) —
-no token to manage. It no-ops if that version is already on the registry, so
-re-running a release is always safe.
-
-## License
-
-[Apache 2.0](./LICENSE) © 2024-2026 Reactor Technologies, Inc.
-
-## Support
-
-- 📖 [Documentation](https://docs.reactor.inc)
-- 💻 [Templates](./templates)
-- 🐛 [Report Issues](https://github.com/reactor-team/create-reactor-app/issues)
-
----
-
-**Happy building with Reactor! 🚀**
+For an end-to-end check, generate a clip, verify the saved MP4 plays from disk,
+then generate another and verify both files remain. Check Cancel, disconnect
+and retry, and a missing API key. Generation checks use your Reactor credits.

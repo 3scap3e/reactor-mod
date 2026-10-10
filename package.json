@@ -1,58 +1,27 @@
 {
-  "name": "create-reactor-app",
-  "version": "2.2.1",
-  "type": "module",
-  "description": "Scaffold a real-time AI video app with the Reactor SDK in seconds. Starter templates for Helios and other world models — run `npx create-reactor-app`.",
-  "keywords": [
-    "reactor",
-    "create-reactor-app",
-    "scaffold",
-    "starter",
-    "template",
-    "boilerplate",
-    "cli",
-    "npx",
-    "create-app",
-    "sdk",
-    "react",
-    "real-time",
-    "video",
-    "ai",
-    "world-models"
-  ],
-  "bin": {
-    "create-reactor-app": "dist/bin/create-reactor-app.js"
+  "name": "fast-h3",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
   },
-  "author": "Reactor Technologies, Inc.",
-  "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/reactor-team/create-reactor-app.git"
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE",
-    "NOTICE"
-  ],
-  "packageManager": "pnpm@10.12.1",
   "dependencies": {
-    "chalk": "^5.3.0",
-    "inquirer": "^14.0.2",
-    "simple-git": "^3.36.0"
+    "@reactor-models/fast-h3": "^1.0.2",
+    "@reactor-team/js-sdk": "^3.0.0",
+    "@reactor-team/ui": "^1.4.1",
+    "hls.js": "^1.6.0",
+    "next": "^15.5.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@types/node": "^25.9.1",
-    "prettier": "^3.8.4",
-    "tsup": "^8.0.1",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.7"
-  },
-  "scripts": {
-    "build": "tsup",
-    "test": "vitest run",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "install-cli": "tsup && pnpm link --global && echo '\n✅ create-reactor-app linked globally. Run it with:\n\n  create-reactor-app\n'"
+    "@tailwindcss/postcss": "^4.1.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.9.0"
   }
 }

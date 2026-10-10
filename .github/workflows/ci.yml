@@ -11,69 +11,15 @@ permissions:
 
 jobs:
   build:
-    name: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6.0.10
-
+      - uses: pnpm/action-setup@v6.0.10
+        with:
+          version: 10.12.1
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: pnpm
-
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-
-  format:
-    name: Format Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6.0.10
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: "24"
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm format:check
-
-  unit-tests:
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6.0.10
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: "24"
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm test
-
-  ci-complete:
-    name: CI Complete
-    needs: [build, format, unit-tests]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Verify no job failed
-        run: |
-          for r in "${{ needs.build.result }}" \
-                   "${{ needs.format.result }}" \
-                   "${{ needs.unit-tests.result }}"; do
-            if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then
-              echo "::error::a required job failed ($r)"; exit 1
-            fi
-          done
-          echo "All CI checks passed."
